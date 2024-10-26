@@ -3,11 +3,11 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
 # Caminhos dos arquivos de chave
-PRIVATE_KEY_PATH = "keys/private_key.pem"
-PUBLIC_KEY_PATH = "keys/public_key.pem"
+PRIVATE_KEY_PATH = "keys/private_key"
+PUBLIC_KEY_PATH = "keys/public_key"
 
-def generate_keys():
-    if os.path.exists(PRIVATE_KEY_PATH) or os.path.exists(PUBLIC_KEY_PATH):
+def generate_keys(private_key_path,public_key_path):
+    if os.path.exists(private_key_path) or os.path.exists(public_key_path):
         print("As chaves já existem")
         return
 
@@ -18,7 +18,7 @@ def generate_keys():
 
     public_key = private_key.public_key()
 
-    with open(PRIVATE_KEY_PATH, "wb") as private_file:
+    with open(private_key_path, "wb") as private_file:
         private_file.write(
             private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
@@ -27,7 +27,7 @@ def generate_keys():
             )
         )
 
-    with open(PUBLIC_KEY_PATH, "wb") as public_file:
+    with open(public_key_path, "wb") as public_file:
         public_file.write(
             public_key.public_bytes(
                 encoding=serialization.Encoding.PEM,
@@ -42,4 +42,5 @@ if __name__ == "__main__":
     if not os.path.exists("keys"):
         os.makedirs("keys")
 
-    generate_keys()
+    generate_keys(f'{PRIVATE_KEY_PATH}_inclusion.pem', f'{PUBLIC_KEY_PATH}_inclusion.pem')
+    generate_keys(f'{PRIVATE_KEY_PATH}_recommendation.pem', f'{PUBLIC_KEY_PATH}_recommendation.pem')
