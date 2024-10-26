@@ -1,5 +1,6 @@
 #python publisher_inclusion.py
 import pika
+import csv
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import hashes
@@ -12,7 +13,15 @@ def load_private_key():
         )
     return private_key
 
-def publish_message(message):
+def include_movie(movie):
+    with open("../SD_TRABALHO1/movies/movies.csv", mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow([movie['genre'],movie['title']])
+        return f'Movie {movie['title']} included in the catalogue'
+    
+    return f'Error including {movie['title']} in the catalogue'
+
+def publish_message(movie):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
 
@@ -20,8 +29,10 @@ def publish_message(message):
 
     private_key = load_private_key()
 
+    message = include_movie(movie)
+    
     signature = private_key.sign(
-        message.encode(),  # mensagem em bytes
+        message.encode('utf-8'),  # mensagem em bytes
         padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()),
             salt_length=padding.PSS.MAX_LENGTH
@@ -41,4 +52,5 @@ def publish_message(message):
     connection.close()
 
 if __name__ == "__main__":
-    publish_message("Olá, RabbitMQ!")
+    movie = {'genre': 'drama', 'title': 'The Impossible'}
+    publish_message(movie)

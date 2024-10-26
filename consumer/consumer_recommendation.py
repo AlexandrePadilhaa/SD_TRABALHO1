@@ -14,6 +14,9 @@ def callback(ch, method, properties, body):
 
     public_key = load_public_key()
 
+    # print(f"Mensagem recebida: {message.decode('utf-8')}")
+    # as vezes a decodificação funciona e as vezes não
+
     try:
         public_key.verify(
             signature,
@@ -25,6 +28,7 @@ def callback(ch, method, properties, body):
             hashes.SHA256()
         )
         print("Assinatura verificada com sucesso.")
+        # faz sentido a confirmação da mensagem aqui dentro mas as vezes não funciona e cai no exception
         print(f"Mensagem recebida: {message.decode('utf-8')}")
         
     except Exception as e:
