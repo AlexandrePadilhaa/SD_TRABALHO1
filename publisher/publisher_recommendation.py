@@ -1,4 +1,6 @@
 #python publisher/publisher_recommendation.py
+import random
+import time
 import pika
 import csv
 from cryptography.hazmat.primitives import serialization
@@ -57,5 +59,34 @@ def publish_recommendation(genre):
 
     connection.close()
 
+def get_genres_from_csv(file_path):
+    genres = set()  
+    with open(file_path, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  
+
+        for row in reader:
+            genre = row[0].strip()  
+            genres.add(genre) 
+
+    return list(genres)
+
+def simulate_recommendation_cycle(duration_in_seconds, interval_in_seconds):
+    genres = get_genres_from_csv('../SD_TRABALHO1/movies/movies.csv')
+
+    start_time = time.time()
+    elapsed_time = 0
+
+    while elapsed_time < duration_in_seconds:
+        genre = random.choice(genres)
+
+        print(f"Publicando recomendação para o gênero: {genre}")
+        publish_recommendation(genre)
+
+        time.sleep(interval_in_seconds)
+
+        elapsed_time = time.time() - start_time
+
 if __name__ == "__main__":
-    publish_recommendation('Romance')
+    #publish_recommendation('Romance')
+    simulate_recommendation_cycle(20, 2)
