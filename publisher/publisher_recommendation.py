@@ -1,8 +1,8 @@
-#python publisher_recommendation.py
+#python publisher/publisher_recommendation.py
 import pika
 import csv
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 
 def load_private_key():
@@ -18,7 +18,8 @@ def load_recommendations(genre: str):
     with open("../SD_TRABALHO1/movies/movies.csv", "r", encoding='utf-8') as file:
         reader = csv.reader(file)
         for row in reader:
-            movie_genre, movie_name = row
+            #print(row)
+            movie_genre, movie_name = row[:2] 
             if movie_genre.lower() == genre.lower():
                 movies.append(movie_name)
                 
@@ -29,14 +30,15 @@ def publish_recommendation(genre):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
 
-    channel.queue_declare(queue='my_queue')
+    # Exchange do tipo 'fanout' para recomendações
+    channel.exchange_declare(exchange='recommendation_exchange', exchange_type='fanout')
 
     private_key = load_private_key()
     
     recommendations = load_recommendations(genre)
 
     signature = private_key.sign(
-        recommendations.encode('utf-8'),  # mensagem em bytes
+        recommendations.encode('utf-8'),
         padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()),
             salt_length=padding.PSS.MAX_LENGTH
@@ -44,11 +46,11 @@ def publish_recommendation(genre):
         hashes.SHA256()
     )
 
-    #assinatura como uma tupla
+    # Publicar a recomendação no exchange
     channel.basic_publish(
-        exchange='',
-        routing_key='my_queue',
-        body=recommendations.encode('utf-8') + b'|' + signature  # separa a mensagem e a assinatura
+        exchange='recommendation_exchange', 
+        routing_key='',  # Sem chave de roteamento no fanout
+        body=recommendations.encode('utf-8') + b'|' + signature 
     )
     
     print(f"Mensagem enviada: {recommendations}")
@@ -56,4 +58,4 @@ def publish_recommendation(genre):
     connection.close()
 
 if __name__ == "__main__":
-    publish_recommendation('fantasy')
+    publish_recommendation('Romance')

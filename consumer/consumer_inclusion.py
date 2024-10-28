@@ -1,4 +1,3 @@
-#python consumer_inclusion.py
 import pika
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -12,10 +11,7 @@ def load_public_key():
 def callback(ch, method, properties, body):
     message, signature = body.rsplit(b'|', 1)
 
-    public_key = load_public_key() 
-    
-    # print(f"Mensagem recebida: {message.decode('utf-8')}")
-    # as vezes a decodificação funciona e as vezes não
+    public_key = load_public_key()
     
     try:
         public_key.verify(
@@ -28,7 +24,6 @@ def callback(ch, method, properties, body):
             hashes.SHA256()
         )
         print("Assinatura verificada com sucesso.")
-        # faz sentido a confirmação da mensagem aqui dentro mas as vezes não funciona e cai no exception
         print(f"Mensagem recebida: {message.decode('utf-8')}")
     
     except Exception as e:
@@ -38,11 +33,20 @@ def consume_message():
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
 
-    channel.queue_declare(queue='my_queue')
+    # exchange do tipo 'fanout'
+    channel.exchange_declare(exchange='movie_exchange', exchange_type='fanout')
 
-    channel.basic_consume(queue='my_queue', on_message_callback=callback, auto_ack=True)
-    
-    print("Aguardando mensagens...")
+    # fila temporária exclusiva para este consumidor
+    result = channel.queue_declare(queue='', exclusive=True)
+    queue_name = result.method.queue
+
+    # Vincular a fila temporária ao exchange
+    channel.queue_bind(exchange='movie_exchange', queue=queue_name)
+
+    print(f"Aguardando mensagens em {queue_name}...")
+
+    # Consumir as mensagens da fila
+    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
 
     channel.start_consuming()
 
