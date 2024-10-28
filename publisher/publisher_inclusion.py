@@ -1,4 +1,4 @@
-#python publisher_inclusion.py
+#python publisher/publisher_inclusion.py
 import pika
 import csv
 from cryptography.hazmat.primitives import serialization
@@ -16,23 +16,24 @@ def load_private_key():
 def include_movie(movie):
     with open("../SD_TRABALHO1/movies/movies.csv", mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow([movie['genre'],movie['title']])
-        return f'Movie {movie['title']} included in the catalogue'
+        writer.writerow([movie['genre'], movie['title']])
+        return f"Movie {movie['title']} included in the catalogue"
     
-    return f'Error including {movie['title']} in the catalogue'
+    return f"Error including {movie['title']} in the catalogue"
 
 def publish_message(movie):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
 
-    channel.queue_declare(queue='my_queue')
+    # exchange do tipo 'fanout'
+    channel.exchange_declare(exchange='movie_exchange', exchange_type='fanout')
 
     private_key = load_private_key()
 
     message = include_movie(movie)
-    
+
     signature = private_key.sign(
-        message.encode('utf-8'),  # mensagem em bytes
+        message.encode('utf-8'),
         padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()),
             salt_length=padding.PSS.MAX_LENGTH
@@ -40,11 +41,11 @@ def publish_message(movie):
         hashes.SHA256()
     )
 
-    #assinatura como uma tupla
+    #mensagem no exchange
     channel.basic_publish(
-        exchange='',
-        routing_key='my_queue',
-        body=message.encode('utf-8') + b'|' + signature  # separa a mensagem e a assinatura
+        exchange='movie_exchange',  
+        routing_key='',  
+        body=message.encode('utf-8') + b'|' + signature 
     )
     
     print(f"Mensagem enviada: {message}")
@@ -52,5 +53,5 @@ def publish_message(movie):
     connection.close()
 
 if __name__ == "__main__":
-    movie = {'genre': 'drama', 'title': 'The Impossible'}
+    movie = {'genre': 'Fantasy', 'title': 'Harry Potter 2'}
     publish_message(movie)
