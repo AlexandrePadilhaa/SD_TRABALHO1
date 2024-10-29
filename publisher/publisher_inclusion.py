@@ -2,6 +2,7 @@
 import pika
 import csv
 import time
+import json
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import hashes
@@ -66,12 +67,17 @@ def publish_message():
                 ),
                 hashes.SHA256()
             )
+            
+            # usando json para garantir a integridade dos dados
+            data = json.dumps({'message' : message,
+                       'signature' : signature.hex()} # em hex porque o json não aceita bytes
+                      ).encode('utf-8') 
 
             #mensagem no exchange
             channel.basic_publish(
                 exchange='movie_exchange',  
                 routing_key='',  
-                body=message.encode('utf-8') + b'|' + signature 
+                body=data
             )
                 
             print(f"Message sent: {message}")

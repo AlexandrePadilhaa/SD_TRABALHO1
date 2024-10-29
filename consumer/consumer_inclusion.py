@@ -1,4 +1,5 @@
 import pika
+import json
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
@@ -9,14 +10,17 @@ def load_public_key():
     return public_key
 
 def callback(ch, method, properties, body):
-    message, signature = body.rsplit(b'|', 1)
+    
+    body = json.loads(body.decode('utf-8'))
+    message = body.get('message')
+    signature = bytes.fromhex(body.get('signature'))
 
     public_key = load_public_key()
     
     try:
         public_key.verify(
             signature,
-            message,
+            message.encode('utf-8'),
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA256()),
                 salt_length=padding.PSS.MAX_LENGTH
@@ -24,7 +28,7 @@ def callback(ch, method, properties, body):
             hashes.SHA256()
         )
         print("Assinatura verificada com sucesso.")
-        print(f"Mensagem recebida: {message.decode('utf-8')}")
+        print(f"Mensagem recebida: {message}")
     
     except Exception as e:
         print(f"Falha na verificação da assinatura: {e}")

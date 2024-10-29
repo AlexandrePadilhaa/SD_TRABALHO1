@@ -2,6 +2,7 @@
 import random
 import time
 import pika
+import json
 import csv
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -48,11 +49,16 @@ def publish_recommendation(genre):
         hashes.SHA256()
     )
 
+    # usando json para garantir a integridade dos dados
+    data = json.dumps({'message' : recommendations,
+                       'signature' : signature.hex()} # em hex porque o json não aceita bytes
+                      ).encode('utf-8') 
+    
     # Publicar a recomendação no exchange
     channel.basic_publish(
         exchange='recommendation_exchange', 
         routing_key='',  # Sem chave de roteamento no fanout
-        body=recommendations.encode('utf-8') + b'|' + signature 
+        body=data
     )
     
     print(f"Message sent: {recommendations}")
@@ -72,7 +78,7 @@ def get_genres_from_csv(file_path):
     return list(genres)
 
 def simulate_recommendation_cycle(duration_in_seconds, interval_in_seconds):
-    genres = get_genres_from_csv('../SD_TRABALHO1/movies/movies.csv')
+    genres = get_genres_from_csv('../SD_TRABALHO1/movies/catalogue.csv')
 
     start_time = time.time()
     elapsed_time = 0
