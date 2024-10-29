@@ -15,7 +15,7 @@ def load_private_key():
 
 def load_recommendations(genre: str):
     movies = []
-    with open("../SD_TRABALHO1/movies/movies.csv", "r", encoding='utf-8') as file:
+    with open("../SD_TRABALHO1/movies/catalogue.csv", "r", encoding='utf-8') as file:
         reader = csv.reader(file)
         for row in reader:
             #print(row)
@@ -24,7 +24,7 @@ def load_recommendations(genre: str):
                 movies.append(movie_name)
                 
     movies = ', '.join(movies)            
-    return f'{genre} movies recommendations: {movies}'
+    return f'{genre} movie recommendations: {movies}'
 
 def publish_recommendation(genre):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
@@ -53,7 +53,7 @@ def publish_recommendation(genre):
         body=recommendations.encode('utf-8') + b'|' + signature 
     )
     
-    print(f"Mensagem enviada: {recommendations}")
+    print(f"Message sent: {recommendations}")
 
     connection.close()
 
