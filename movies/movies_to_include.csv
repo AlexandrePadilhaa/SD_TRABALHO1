@@ -1,20 +1,8 @@
-Genre,Title
-Drama,The Godfather
-Comedy,The 40-Year-Old-Virgin
-Romance,The Notebook
-Fiction,Inception
-Drama,Fight Club
-Drama,Forrest Gump
-Sci-fi,The Matrix
-Comedy,Zoolander
-Romance,Pride and Prejudice
-Drama,Pulp Fiction
-Sci-fi,Star Wars: A New Hope
+Genre,Movie
 Action,Gladiator
 Drama,Inglourious Basterds
 Horror,The Silence Of The Lambs
 Comedy,Bridesmaids
-Romance,Pride and Prejudice
 Drama,Saving Private Ryan
 Drama,Titanic
 Sci-fi,A Clockwork Orange
@@ -47,9 +35,7 @@ Romance,Pretty Woman
 Drama,City of God
 Comedy,Superbad
 Comedy,Tropic Tunder
-Comedy,Zoolander
 Comedy,Bridesmaids
-Romance,Pride and Prejudice
 Romance,Notting Hill
 Romance,The Fault in Our Stars
 Romance,Slepless in Seattle

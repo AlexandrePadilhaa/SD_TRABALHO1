@@ -39,14 +39,15 @@ def consume_message():
     channel = connection.channel()
 
     # Exchange do tipo 'fanout'
-    channel.exchange_declare(exchange='recommendation_exchange', exchange_type='fanout')
+    channel.exchange_declare(exchange='recommendation_topic_exchange', exchange_type='topic')
 
     # fila temporária exclusiva para este consumidor
     result = channel.queue_declare(queue='', exclusive=True)
     queue_name = result.method.queue
 
-    # Vincular a fila temporária ao exchange
-    channel.queue_bind(exchange='recommendation_exchange', queue=queue_name)
+    # Vincular a fila temporária aos topicos
+    channel.queue_bind(exchange='recommendation_topic_exchange', queue=queue_name, routing_key='genre.romance')
+    channel.queue_bind(exchange='recommendation_topic_exchange', queue=queue_name, routing_key='genre.horror')
 
     print(f"Aguardando mensagens em {queue_name}...")
 

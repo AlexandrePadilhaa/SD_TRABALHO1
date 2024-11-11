@@ -34,7 +34,7 @@ def publish_recommendation(genre):
     channel = connection.channel()
 
     # Exchange do tipo 'fanout' para recomendações
-    channel.exchange_declare(exchange='recommendation_exchange', exchange_type='fanout')
+    channel.exchange_declare(exchange='recommendation_topic_exchange', exchange_type='topic')
 
     private_key = load_private_key()
     
@@ -55,13 +55,14 @@ def publish_recommendation(genre):
                       ).encode('utf-8') 
     
     # Publicar a recomendação no exchange
+    routing_key = f'genre.{genre.lower()}'
     channel.basic_publish(
-        exchange='recommendation_exchange', 
-        routing_key='',  # Sem chave de roteamento no fanout
+        exchange='recommendation_topic_exchange', 
+        routing_key=routing_key,  
         body=data
     )
     
-    print(f"Message sent: {recommendations}")
+    print(f"Message sent: {recommendations}, routing_key = {routing_key}")
 
     connection.close()
 
